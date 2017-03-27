@@ -1,0 +1,278 @@
+#include<stdio.h>		
+#include<string.h>
+#include<stdlib.h>
+#define len sizeof(struct Box) 							//定义一个与结构体等长的len，给新的结构体分配空间
+
+struct Box												//建立结构体
+{		
+	int num;											
+	float data;											
+	struct Box *next;									
+};
+
+struct Box *head,*p1,*p2;								//定义全局变量
+int n=0;												//记录链表长度
+
+
+
+/**********Creat 函数************
+********创建整个动态链表******/
+struct Box *Creat()
+{
+	head = NULL;		
+	p1 = (struct Box *)malloc(len);		//开辟节点
+	p2 = p1;
+
+	printf("请输入 节点位置 以及 节点包含的数据:          （输入0 0来结束链创建）\n");
+	scanf("%d%f",&(p1->num),&(p1->data));			
+
+	while(p1->num!=0)									//当输入0 0时主链表创建完成
+	{	
+		n++;											//节点数增加
+		if(n==1) head = p1;								//将头指针移到第一个创建的节点
+		else p2->next = p1;								//主链表和新建节点链接
+		p2=p1;											//刷新主链表，使得链接后的链表为主链表
+		p1=(struct Box*)malloc(len);					//开辟新内存空间
+		scanf("%d%f",&(p1->num),&(p1->data));			//输入新建节点的位置 以及 节点包含内数据
+	}
+
+	p2->next=NULL;										//使得链表结尾指向NULL
+
+	printf("建立链表结束       链表长度为%d\n\n",n);
+
+	return head;										//返回头指针给Creat函数
+}
+
+
+
+/******print函数**********
+********输出链表***********/
+int print(struct Box *head1)
+{
+	printf("\n当前链表如下:\n" );
+	printf("节点位        数据\n");
+
+	while(head1!=NULL)									//循环输出链表中的每个节点
+	{
+		printf("%d             %f\n",head1->num,head1->data);		
+		head1=head1->next;
+	}
+
+	return 0;
+}
+
+
+
+/***************Del函数***************
+*************删除指定的节点**********/
+struct Box *Del(struct Box *head,int num)
+{
+	struct Box *sp1,*sp2;
+
+	if (head==NULL)
+	{
+		printf("！！！！！链表没有任何内容！！！！！\n");
+		goto Del_End;									//跳到Del函数末尾，结束Del函数
+	}	
+
+	sp1=head;
+
+	while(num != sp1->num)								//寻找需要删除的节点
+	{
+		sp2=sp1;
+		sp1=sp1->next;
+
+		if(sp1 == NULL)
+		{
+			printf("\n!!!!链表中无此节点,无法删除!!!!\n\n");
+			goto Del_End;								//跳到Del函数末尾，结束Del函数
+		}	
+	}
+
+	if (num == sp1->num)
+	{
+		if (sp1 == head)								//当要删除的节点为首节点时，直接将首节点替换为当前首节点的后一个节点
+		{
+			head = head->next;
+		}
+
+		else if (sp1->next==NULL)						//当要删除的节点为尾节点时，直接将尾节点替换为尾节点的前一个节点
+		{
+			sp2->next=NULL;
+		}
+
+		else
+		{
+			sp2->next=sp1->next;						//当要删除的节点为中间的节点时，直接将被删除节点的前节点和后节点拼接
+		}
+
+		n--;
+
+		printf("\n!!!成功删除%d节点的数据!!!\n", num);
+	}
+
+	Del_End:;											//Del结尾点
+
+	return head;
+}
+
+
+
+
+/***********Insert函数**************
+*******在主链表中录入新的链表*********/
+struct Box *Insert(struct Box *head,struct Box *newbox)
+{
+	if(head == NULL)								//当主函数尾空时
+	{
+		newbox->next = NULL;
+		head = newbox;
+		goto Insert_End;							//跳到Insert函数结尾
+	}
+
+	struct Box *sp1,*sp2;
+	sp1=head;										//指向头指针
+
+	if (sp1->num > newbox->num) 					//当录入的节点位比链表中最小节点位小时，把录入的节点当首节点
+	{
+		newbox->next = head;
+		head = newbox;
+	}
+
+	else 
+	{
+		while(sp1->num < newbox->num || sp1->num == newbox->num)			//寻找新节点需要录入的位置
+		{
+			if (sp1->num == newbox->num)				//当链表中有相同的节点位时
+			{
+				printf("\n\n!!!!!!此节点已处在，请勿重复录入!!!!!!\n\n");
+				goto Insert_End;						//新加入的节点位和已有节点位重复，所以跳到Insert函数结尾
+			}
+
+			sp2=sp1;									//切换到下个节点位
+			sp1=sp1->next;
+
+			if (sp1 == NULL)							//当录入的位置是链表尾部时
+			{
+				newbox->next = NULL;
+				sp2->next = newbox;
+				goto Insert_End;						//函数录入已完成，跳到结尾
+			}
+		}
+
+		sp2->next = newbox;
+		newbox->next = sp1;	
+	}
+	
+	Insert_End:;										//Insert结尾点
+
+	printf("\n输入成功!!!\n");
+
+	n++;
+
+	return head;
+}
+
+
+
+
+/***********Revise函数************
+**********修改节点的数据**********/
+struct Box *Revise(struct Box *head,int num,float newdata)
+{
+	struct Box *sp1,*sp2;
+
+	if (head==NULL)
+	{
+		printf("！！！！！链表没有任何内容！！！！！\n");
+		goto Revise_End;									//跳到Revise函数末尾，结束Revise函数
+	}	
+
+	sp1=head;
+
+	while(num != sp1->num)									//寻找需要修改的节点
+	{
+		sp2=sp1;
+		sp1=sp1->next;
+
+		if(sp1 == NULL)
+		{
+			printf("\n!!!!链表中无此节点,请先添加此节点!!!!\n\n");
+			goto Revise_End;								//跳到Revise函数末尾，结束Revise函数
+		}	
+	}
+
+	if (num == sp1->num)
+	{
+		sp1->data = newdata;
+
+		printf("\n!!!成功更改%d节点的数据!!!\n", num);
+	}
+
+	Revise_End:;											//Revise结尾点
+
+	return head;
+}
+
+
+
+
+/************主函数**************/
+int main()
+{
+	struct Box *p,*newbox;
+	int num,option;
+	float newdata;
+
+	printf("******** 开始创建主列表 *******\n");
+	p=Creat();
+	print(p);
+
+	printf("\n请输入接下来的操作\n1：删除数据\n2：录入数据\n3：修改数据\n4：结束程序\n\n");				//功能选择
+	scanf("%d",&option);
+
+	while (option !=4)
+	{
+		if(option != 1 && option !=2 && option !=3 )
+		{
+			printf("没有此项功能请重新输入\n");
+		}
+
+		if(option == 1)
+		{
+			printf("\n请输入要删除数据的节点号\n");
+			scanf("%d",&num);
+			p=Del(p,num);								//执行删除函数操作
+			print(p);
+		}
+
+		if(option == 2)
+		{	
+			newbox = (struct Box *)malloc(len);			//开辟新内存空间来存放数据
+			printf("\n请输入 存放数据的节点位置  以及  录入的数据\n");
+			scanf("%d %f",&(newbox->num),&(newbox->data)); 
+			p=Insert(p,newbox);							//执行录入函数操作
+			print(p);	
+		}
+
+		if(option == 3)
+		{
+			printf("\n请输入要修改的的节点号  以及  修改后此节点的数据\n");
+			scanf("%d %f",&num,&newdata); 
+			p=Revise(p,num,newdata);					//执行修改函数操作
+			print(p);
+		}
+
+		printf("\n请输入接下来的操作\n1：删除数据\n2：录入数据\n3：修改数据\n4：结束程序\n\n");
+		scanf("%d",&option);
+	}
+
+	printf("\n*********程序结束********\n");
+	print(p);
+
+	free(p1);											//释放空间
+	free(p2);	
+	free(head);
+	
+	return 0;
+}
